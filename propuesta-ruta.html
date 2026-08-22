@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruta de Aprendizaje - Hacking Ético</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #000D2D;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(0, 13, 45, 0.95);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 0 40px rgba(107, 59, 226, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0 30px 0;
+            border-bottom: 2px solid #6EE2FD;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2em;
+            color: #B4F2FD;
+        }
+        
+        .subtitle {
+            color: #6EE2FD;
+            font-size: 1em;
+            margin-top: 5px;
+        }
+        
+        .category {
+            margin-bottom: 8px;
+            border: 1px solid rgba(107, 59, 226, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(19, 92, 174, 0.05);
+        }
+        
+        .category-header {
+            padding: 12px 18px;
+            cursor: pointer;
+            background: rgba(19, 92, 174, 0.15);
+            color: #B4F2FD;
+            font-size: 1.1em;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .category-header:hover {
+            background: rgba(19, 92, 174, 0.3);
+        }
+        
+        .category-header .arrow {
+            transition: transform 0.3s;
+            font-size: 0.8em;
+            color: #6EE2FD;
+        }
+        
+        .category-header .arrow.open {
+            transform: rotate(90deg);
+        }
+        
+        .category-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 18px;
+        }
+        
+        .category-content.open {
+            max-height: 2000px;
+            padding: 15px 18px 20px 18px;
+        }
+        
+        .subcategory {
+            margin: 8px 0;
+        }
+        
+        .subcategory-header {
+            padding: 6px 12px;
+            cursor: pointer;
+            color: #6EE2FD;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .subcategory-header:hover {
+            background: rgba(107, 59, 226, 0.15);
+        }
+        
+        .subcategory-header .arrow {
+            transition: transform 0.3s;
+            font-size: 0.7em;
+            color: #B4F2FD;
+        }
+        
+        .subcategory-header .arrow.open {
+            transform: rotate(90deg);
+        }
+        
+        .subcategory-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 12px;
+        }
+        
+        .subcategory-content.open {
+            max-height: 1000px;
+            padding: 8px 12px 12px 12px;
+        }
+        
+        .resource-item {
+            padding: 4px 0 4px 16px;
+            border-left: 2px solid rgba(107, 59, 226, 0.3);
+            margin: 3px 0 3px 8px;
+        }
+        
+        .resource-item a {
+            color: #B4F2FD;
+            text-decoration: none;
+            font-size: 0.95em;
+            transition: color 0.2s;
+        }
+        
+        .resource-item a:hover {
+            color: #6EE2FD;
+            text-decoration: underline;
+        }
+        
+        .nested {
+            margin-left: 15px;
+            border-left: 1px dashed rgba(107, 59, 226, 0.2);
+            padding-left: 15px;
+        }
+        
+        .badge {
+            display: inline-block;
+            font-size: 0.65em;
+            padding: 1px 10px;
+            border-radius: 10px;
+            background: rgba(107, 59, 226, 0.4);
+            color: #B4F2FD;
+            margin-left: 6px;
+            font-weight: normal;
+        }
+        
+        .platform-section {
+            margin-top: 25px;
+            padding: 18px;
+            background: rgba(107, 59, 226, 0.08);
+            border-radius: 8px;
+            border: 1px solid rgba(107, 59, 226, 0.2);
+        }
+        
+        .platform-section h2 {
+            color: #B4F2FD;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .platform-item {
+            background: rgba(0, 13, 45, 0.5);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid rgba(107, 59, 226, 0.15);
+            transition: all 0.2s;
+        }
+        
+        .platform-item:hover {
+            border-color: #6EE2FD;
+            background: rgba(19, 92, 174, 0.2);
+        }
+        
+        .platform-item a {
+            color: #6EE2FD;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+        
+        .platform-item a:hover {
+            color: #B4F2FD;
+        }
+        
+        .special-badge {
+            background: #673be2;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            display: inline-block;
+        }
+        
+        .count {
+            color: #135CAE;
+            font-size: 0.75em;
+            margin-left: 8px;
+            font-weight: normal;
+        }
+        
+        footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(107, 59, 226, 0.2);
+            text-align: center;
+            color: #6EE2FD;
+            font-size: 0.85em;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .category-header {
+                font-size: 0.95em;
+                padding: 10px 14px;
+            }
+            .platform-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖥️ Ruta de Hacking Ético</h1>
+            <div class="subtitle">Recursos gratuitos • Haz clic para explorar</div>
+        </header>
+
+        <!-- Category 1 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>🛡️ Conceptos básicos de Ciberseguridad</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://www.youtube.com/watch?v=gzES0MuWqHE" target="_blank">▶️ Aprende Ciberseguridad desde 0 [Hixec]</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 2 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>🖥️ Virtualización</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://youtu.be/bIoVtXiG9xc" target="_blank">▶️ Curso de Virtualización con Virtualbox</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 3 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>💻 Fundamentos de Sistemas Operativos</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="subcategory">
+                    <div class="subcategory-header" onclick="toggleSubcategory(this)">
+                        <span>🐧 Linux</span>
+                        <span class="arrow">▶</span>
+                    </div>
+                    <div class="subcategory-content">
+                        <div class="resource-item">
+                            <a href="https://academy.hackthebox.com/course/preview/linux-fundamentals" target="_blank">📚 Linux Fundamentals (HTB)</a>
+                        </div>
+                        <div class="resource-item nested">
+                            <a href="https://www.youtube.com/watch?v=8v1cR7-msQ0" target="_blank">▶️ Curso Linux para Hacking [Hixec]</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="subcategory">
+                    <div class="subcategory-header" onclick="toggleSubcategory(this)">
+                        <span>🪟 Windows</span>
+                        <span class="arrow">▶</span>
+                    </div>
+                    <div class="subcategory-content">
+                        <div class="resource-item">
+                            <a href="https://academy.hackthebox.com/course/preview/windows-fundamentals" target="_blank">📚 Windows Fundamentals (HTB)</a>
+                        </div>
+                        <div class="resource-item nested">
+                            <a href="https://youtu.be/sZ-i7yRZEaI?si=9IblXsycdKB4pkhP" target="_blank">▶️ Curso Windows para Hacking [Hixec]</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 4 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>🌐 Redes y Networking</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://academy.hackthebox.com/course/preview/introduction-to-networking" target="_blank">📚 Introducción al Networking (HTB)</a>
+                </div>
+                <div class="resource-item nested">
+                    <a href="https://www.youtube.com/@AlbertoLopezVLOG" target="_blank">▶️ Canal: AlbertoLopez TECH TIPS</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/introtolan" target="_blank">📚 Introducción a LAN (THM)</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/activerecon?ref=blog.tryhackme.com" target="_blank">📚 Reconocimiento Activo (THM)</a>
+                </div>
+                <div class="subcategory">
+                    <div class="subcategory-header" onclick="toggleSubcategory(this)">
+                        <span>🧪 Laboratorio local Kali ↔ Debian</span>
+                        <span class="arrow">▶</span>
+                    </div>
+                    <div class="subcategory-content">
+                        <div class="subcategory">
+                            <div class="subcategory-header" onclick="toggleSubcategory(this)" style="font-size:0.9em; color:#B4F2FD;">
+                                <span>Configuración de servicios</span>
+                                <span class="arrow">▶</span>
+                            </div>
+                            <div class="subcategory-content">
+                                <div class="resource-item">🔹 OpenSSH</div>
+                                <div class="resource-item">🔹 Apache2</div>
+                                <div class="resource-item">🔹 vsftpd</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 5 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>⚡ Bash Scripting</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/bashscripting" target="_blank">📚 Introducción a Bash Scripting (THM)</a>
+                </div>
+                <div class="resource-item nested">
+                    <a href="https://www.youtube.com/watch?v=tNeRFm2jY7c" target="_blank">▶️ Curso de Bash desde 0 [Mario]</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 6 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>🐍 Python Scripting</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/pythonbasics" target="_blank">📚 Introducción a Python (THM)</a>
+                </div>
+                <div class="resource-item nested">
+                    <a href="https://www.youtube.com/watch?v=Kp4Mvapo5kc" target="_blank">▶️ Curso de Python desde 0 [mouredev]</a>
+                </div>
+                <div class="resource-item nested">
+                    <a href="https://thepacketgeek.com/scapy/building-network-tools/" target="_blank">📚 Ejercicios con scapy</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 7 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>🔍 Fundamentos de Hacking</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/redteamrecon" target="_blank">📚 Reconocimiento pasivo (THM)</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://academy.hackthebox.com/course/preview/vulnerability-assessment" target="_blank">📚 Análisis de vulnerabilidades (HTB)</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/cryptographyfordummies" target="_blank">📚 Criptografía para dummies (THM)</a>
+                </div>
+                <div class="resource-item nested">
+                    <a href="https://tryhackme.com/room/crackthehash" target="_blank">🔑 Crack the hash (THM)</a>
+                </div>
+                <div class="resource-item nested">
+                    <a href="https://tryhackme.com/room/crackthehashlevel2" target="_blank">🔑 Crack the hash 2 (THM)</a>
+                </div>
+                <div class="subcategory">
+                    <div class="subcategory-header" onclick="toggleSubcategory(this)">
+                        <span>🔧 Herramientas esenciales</span>
+                        <span class="arrow">▶</span>
+                    </div>
+                    <div class="subcategory-content">
+                        <div class="resource-item"><a href="https://tryhackme.com/room/furthernmap" target="_blank">📚 Nmap (THM)</a></div>
+                        <div class="resource-item"><a href="https://tryhackme.com/room/ffuf" target="_blank">📚 Ffuf (THM)</a></div>
+                        <div class="resource-item"><a href="https://tryhackme.com/room/hydra" target="_blank">📚 Hydra (THM)</a></div>
+                    </div>
+                </div>
+                <div class="resource-item">
+                    <a href="https://academy.hackthebox.com/course/preview/using-the-metasploit-framework" target="_blank">📚 Curso de Metasploit (HTB)</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 8 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>🌍 Hacking Web</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://academy.hackthebox.com/course/preview/web-requests" target="_blank">📚 Web requests (HTB)</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/burpsuitebasics" target="_blank">📚 Fundamentos de Burp Suite (THM)</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://portswigger.net/web-security/learning-paths/" target="_blank">📚 Portswigger Learning Paths</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://portswigger.net/web-security/all-topics" target="_blank">📚 Portswigger Labs</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/sqlmap" target="_blank">📚 SQLMap (THM)</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 9 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>⬆️ Escalada de privilegios</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/linuxprivesc" target="_blank">📚 Linux (THM)</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/windows10privesc" target="_blank">📚 Windows (THM)</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 10 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>🔄 Pivoting</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://www.stationx.net/how-to-create-a-virtual-hacking-lab/" target="_blank">🧪 Laboratorio de Pivoting sencillo</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://lxbxwxb.blogspot.com/2023/03/laboratorio-pivoting-con-socat-y-chisel.html" target="_blank">🧪 Pivoting con Chisel y Socat</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://www.youtube.com/watch?v=Sj6S-9Yij3g" target="_blank">▶️ Pivoting 1 salto [Jackie0x17]</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://www.youtube.com/watch?v=zGm7kUvC31M" target="_blank">▶️ Pivoting 2 saltos [Jackie0x17]</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://youtu.be/Kimrp9WZPTU" target="_blank">▶️ Ligolo | Herramienta esencial</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 11 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>🏢 Active Directory</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://dev.to/adamkatora/building-an-active-directory-pentesting-home-lab-in-virtualbox-53dc" target="_blank">🧪 Laboratorio local</a>
+                </div>
+                <div class="subcategory">
+                    <div class="subcategory-header" onclick="toggleSubcategory(this)">
+                        <span>📚 Laboratorios THM</span>
+                        <span class="arrow">▶</span>
+                    </div>
+                    <div class="subcategory-content">
+                        <div class="resource-item"><a href="https://tryhackme.com/room/winadbasics" target="_blank">Fundamentos de AD</a></div>
+                        <div class="resource-item"><a href="https://tryhackme.com/room/adenumeration" target="_blank">Enumeración de AD</a></div>
+                        <div class="resource-item"><a href="https://tryhackme.com/room/breachingad" target="_blank">Comprometiendo AD</a></div>
+                        <div class="resource-item"><a href="https://tryhackme.com/room/postexploit" target="_blank">Post-Explotación</a></div>
+                    </div>
+                </div>
+                <div class="subcategory">
+                    <div class="subcategory-header" onclick="toggleSubcategory(this)">
+                        <span>🎯 Máquinas THM</span>
+                        <span class="arrow">▶</span>
+                    </div>
+                    <div class="subcategory-content">
+                        <div class="resource-item"><a href="https://tryhackme.com/room/attacktivedirectory" target="_blank">Attacktive Directory</a></div>
+                        <div class="resource-item"><a href="https://tryhackme.com/room/vulnnetroasted" target="_blank">Vulnnet Roasted</a></div>
+                        <div class="resource-item"><a href="https://tryhackme.com/room/enterprise" target="_blank">Enterprise</a></div>
+                        <div class="resource-item"><a href="https://tryhackme.com/room/raz0rblack" target="_blank">Raz0rblack</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 12 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>📝 Redacción de informes</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://pentestreports.com/reports/" target="_blank">📄 Ejemplos de reporte</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://github.com/hmaverickadams/TCM-Security-Sample-Pentest-Report/blob/master/TCMS%20-%20Demo%20Corp%20-%20Findings%20Report%20-%20Example%202.docx" target="_blank">📄 Plantilla TCM</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://www.youtube.com/watch?v=hmQhd8fUyKk" target="_blank">▶️ Reporte profesional [Jackie0x17]</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 13 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>💥 Buffer Overflow</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/bufferoverflowprep" target="_blank">📚 BOF Preparation (THM)</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/gatekeeper" target="_blank">📚 Gatekeeper (THM)</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://www.youtube.com/watch?v=K_1mfOzj2wg" target="_blank">▶️ Explotación BOF [Jackie0x17]</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 14 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>🎮 Command & Control</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/rppsempire" target="_blank">📚 Empire (THM)</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 15 -->
+        <div class="category">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>📶 Hacking Wifi</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="category-content">
+                <div class="resource-item">
+                    <a href="https://tryhackme.com/room/wifihacking101?ref=blog.tryhackme.com" target="_blank">📚 Wifi Hacking 101 (THM)</a>
+                </div>
+                <div class="resource-item">
+                    <a href="https://wifichallengelab.com/" target="_blank">📚 WiFiChallenge Lab</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platforms -->
+        <div class="platform-section">
+            <h2>🎯 Plataformas para practicar</h2>
+            <div class="platform-grid">
+                <div class="platform-item"><a href="https://vulnyx.com/" target="_blank">Vulnyx</a></div>
+                <div class="platform-item"><a href="https://hackmyvm.eu/" target="_blank">HackMyVM</a></div>
+                <div class="platform-item"><a href="https://www.vulnhub.com/" target="_blank">VulnHub</a></div>
+                <div class="platform-item"><a href="https://overthewire.org/wargames/" target="_blank">OverTheWire</a></div>
+            </div>
+        </div>
+
+        <div class="platform-section" style="margin-top:15px;">
+            <div class="platform-item" style="grid-column:1/-1; text-align:center; padding:12px;">
+                <a href="https://github.com/winterrdog/tryhackme-free-rooms" target="_blank" style="font-size:1.1em; color:#B4F2FD;">
+                    📚 Salas gratuitas de THM <span class="special-badge">⭐ 100+</span>
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            <p>📚 Ruta de Aprendizaje de Hacking Ético • Recursos gratuitos</p>
+            <p style="color:#135CAE; font-size:0.8rem; margin-top:5px;">Haz clic en cualquier categoría para expandir/colapsar • Actualizado 2026</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle category - closes all other categories
+        function toggleCategory(header) {
+            const currentContent = header.nextElementSibling;
+            const currentArrow = header.querySelector('.arrow');
+            const isOpen = currentContent.classList.contains('open');
+            
+            // Close all categories
+            document.querySelectorAll('.category-content').forEach(content => {
+                content.classList.remove('open');
+            });
+            document.querySelectorAll('.category-header .arrow').forEach(arrow => {
+                arrow.classList.remove('open');
+            });
+            
+            // If it wasn't open, open it
+            if (!isOpen) {
+                currentContent.classList.add('open');
+                currentArrow.classList.add('open');
+            }
+        }
+        
+        // Toggle subcategory - independent from categories
+        function toggleSubcategory(header) {
+            const content = header.nextElementSibling;
+            const arrow = header.querySelector('.arrow');
+            
+            content.classList.toggle('open');
+            arrow.classList.toggle('open');
+        }
+        
+        // Allow subcategory clicks to not trigger parent category
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.subcategory-header').forEach(el => {
+                el.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
