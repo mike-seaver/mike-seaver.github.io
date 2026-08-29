@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kit OSINT — Rastreo de identidad por username</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#101214;
+  --panel:#171a1d;
+  --card:#1b1e22;
+  --card-hover:#202428;
+  --line:#2a2e33;
+  --paper:#e9e6dc;
+  --paper-dim:#9ba0a6;
+  --amber:#e0a72e;
+  --amber-dim:#8a6a24;
+  --thread:#c1443c;
+  --teal:#5fb8ac;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--paper);
+  font-family:var(--sans);
+  line-height:1.55;
+  background-image:
+    radial-gradient(circle at 15% 8%, rgba(224,167,46,0.05), transparent 40%),
+    radial-gradient(circle at 85% 92%, rgba(193,68,60,0.06), transparent 40%);
+}
+
+/* ---------- NAV ---------- */
+.nav{
+  position:sticky; top:0; z-index:50;
+  background:rgba(16,18,20,0.92);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 28px;
+  flex-wrap:wrap; gap:10px;
+}
+.nav .brand{
+  font-family:var(--mono); font-weight:700; font-size:14px;
+  letter-spacing:0.06em; color:var(--paper);
+}
+.nav .brand span{color:var(--amber);}
+.nav ul{list-style:none; display:flex; gap:22px; flex-wrap:wrap;}
+.nav a{
+  color:var(--paper-dim); text-decoration:none; font-size:13px;
+  font-family:var(--mono); letter-spacing:0.02em;
+  border-bottom:1px solid transparent; padding-bottom:2px;
+  transition:color .15s, border-color .15s;
+}
+.nav a:hover{color:var(--amber); border-color:var(--amber);}
+
+/* ---------- HERO ---------- */
+.hero{
+  max-width:920px; margin:0 auto; padding:76px 28px 40px;
+}
+.stamp{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--mono); font-size:11px; letter-spacing:0.14em;
+  color:var(--amber); border:1px solid var(--amber-dim);
+  padding:5px 10px; border-radius:2px; text-transform:uppercase;
+  background:rgba(224,167,46,0.06);
+}
+.stamp::before{content:"●"; font-size:8px;}
+.hero h1{
+  font-family:var(--mono); font-weight:700;
+  font-size:clamp(32px, 5vw, 52px);
+  line-height:1.08; margin:20px 0 18px; letter-spacing:-0.01em;
+  color:var(--paper);
+}
+.hero h1 em{
+  font-style:normal; color:var(--thread);
+}
+.hero p.lead{
+  font-size:17px; color:var(--paper-dim); max-width:640px;
+}
+.hero .meta{
+  margin-top:26px; display:flex; gap:22px; flex-wrap:wrap;
+  font-family:var(--mono); font-size:12px; color:var(--paper-dim);
+}
+.hero .meta b{color:var(--teal); font-weight:600;}
+
+/* ---------- CALLOUT ---------- */
+.callout{
+  max-width:920px; margin:0 auto 56px; padding:0 28px;
+}
+.callout .box{
+  border-left:3px solid var(--thread);
+  background:linear-gradient(90deg, rgba(193,68,60,0.08), transparent 60%);
+  padding:18px 22px; border-radius:0 4px 4px 0;
+}
+.callout .box .k{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--thread); display:block; margin-bottom:8px;
+}
+.callout .box p{font-size:14.5px; color:var(--paper); opacity:0.92;}
+
+/* ---------- SECTION HEADERS ---------- */
+section{max-width:1180px; margin:0 auto; padding:0 28px 70px;}
+.section-head{
+  display:flex; align-items:baseline; gap:14px; margin-bottom:28px;
+  border-bottom:1px solid var(--line); padding-bottom:16px;
+}
+.section-head .idx{
+  font-family:var(--mono); color:var(--amber-dim); font-size:13px;
+}
+.section-head h2{
+  font-family:var(--mono); font-size:22px; font-weight:600; color:var(--paper);
+}
+.section-head .count{
+  margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--paper-dim);
+}
+
+/* ---------- FILTER BAR ---------- */
+.filters{
+  display:flex; gap:8px; flex-wrap:wrap; margin-bottom:26px;
+}
+.filters button{
+  font-family:var(--mono); font-size:12px; letter-spacing:0.02em;
+  background:var(--card); color:var(--paper-dim);
+  border:1px solid var(--line); padding:7px 13px; border-radius:20px;
+  cursor:pointer; transition:all .15s;
+}
+.filters button:hover{color:var(--paper); border-color:var(--amber-dim);}
+.filters button.active{
+  background:var(--amber); color:#161311; border-color:var(--amber); font-weight:600;
+}
+.search{
+  width:100%; margin-bottom:22px;
+}
+.search input{
+  width:100%; background:var(--panel); border:1px solid var(--line);
+  color:var(--paper); font-family:var(--sans); font-size:14px;
+  padding:12px 16px; border-radius:6px; outline:none;
+}
+.search input::placeholder{color:var(--paper-dim);}
+.search input:focus{border-color:var(--teal);}
+
+/* ---------- CARDS GRID ---------- */
+.grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(290px,1fr));
+  gap:14px;
+}
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:8px;
+  padding:18px 20px; transition:border-color .15s, transform .15s, background .15s;
+  display:flex; flex-direction:column; gap:10px;
+}
+.card:hover{border-color:var(--amber-dim); background:var(--card-hover); transform:translateY(-2px);}
+.card .top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+.card h3{font-family:var(--mono); font-size:15.5px; color:var(--paper); font-weight:600;}
+.card .badge{
+  font-family:var(--mono); font-size:10px; letter-spacing:0.06em; text-transform:uppercase;
+  padding:3px 8px; border-radius:20px; white-space:nowrap; flex-shrink:0;
+}
+.badge.cli{background:rgba(95,184,172,0.14); color:var(--teal); border:1px solid rgba(95,184,172,0.35);}
+.badge.web{background:rgba(224,167,46,0.14); color:var(--amber); border:1px solid rgba(224,167,46,0.35);}
+.badge.framework{background:rgba(193,68,60,0.14); color:var(--thread); border:1px solid rgba(193,68,60,0.35);}
+.badge.email{background:rgba(157,140,255,0.14); color:#b3a4ff; border:1px solid rgba(157,140,255,0.35);}
+.badge.imagen{background:rgba(255,180,120,0.14); color:#f0a860; border:1px solid rgba(255,180,120,0.35);}
+.badge.sinlogin{background:rgba(140,200,255,0.14); color:#7fc0f0; border:1px solid rgba(140,200,255,0.35);}
+.badge.ext{background:rgba(180,220,140,0.14); color:#a3d67f; border:1px solid rgba(180,220,140,0.35);}
+.badge.dir{background:rgba(230,230,230,0.10); color:#c9c9c9; border:1px solid rgba(230,230,230,0.28);}
+.card .coverage{font-family:var(--mono); font-size:11.5px; color:var(--paper-dim);}
+.card .coverage b{color:var(--paper);}
+.card p{font-size:13.5px; color:var(--paper-dim); flex:1;}
+.card a.link{
+  font-family:var(--mono); font-size:12px; color:var(--teal); text-decoration:none;
+  align-self:flex-start; border-bottom:1px solid rgba(95,184,172,0.35);
+}
+.card a.link:hover{color:var(--paper);}
+.no-results{
+  grid-column:1/-1; text-align:center; padding:40px 0; color:var(--paper-dim);
+  font-family:var(--mono); font-size:13px;
+}
+
+/* ---------- PIVOT DIAGRAM ---------- */
+.pivot-wrap{
+  background:var(--panel); border:1px solid var(--line); border-radius:10px;
+  padding:36px 24px; overflow-x:auto;
+}
+.pivot-wrap svg{display:block; margin:0 auto; min-width:640px;}
+.pivot-caption{
+  text-align:center; margin-top:18px; font-family:var(--mono); font-size:12px;
+  color:var(--paper-dim); max-width:560px; margin-left:auto; margin-right:auto;
+}
+
+/* ---------- WORKFLOW ---------- */
+.flow{
+  counter-reset:step;
+  display:grid; gap:10px;
+}
+.flow-step{
+  display:grid; grid-template-columns:44px 1fr; gap:16px; align-items:start;
+  background:var(--card); border:1px solid var(--line); border-radius:8px;
+  padding:14px 18px;
+}
+.flow-step .num{
+  counter-increment:step; font-family:var(--mono); font-weight:700; font-size:18px;
+  color:var(--amber); position:relative;
+}
+.flow-step .num::before{content: counter(step, decimal-leading-zero);}
+.flow-step .txt{font-size:14px; color:var(--paper);}
+.flow-step .txt small{display:block; color:var(--paper-dim); font-size:12.5px; margin-top:2px;}
+
+/* ---------- CTF PLATFORMS ---------- */
+.ctf-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:14px;
+}
+.ctf-card{
+  border:1px solid var(--line); border-radius:8px; padding:18px 20px;
+  background:linear-gradient(160deg, var(--card), var(--panel));
+}
+.ctf-card h3{font-family:var(--mono); font-size:14.5px; color:var(--paper); margin-bottom:8px;}
+.ctf-card p{font-size:13px; color:var(--paper-dim);}
+
+/* ---------- FOOTER ---------- */
+footer{
+  border-top:1px solid var(--line); padding:34px 28px 50px;
+  max-width:1180px; margin:0 auto;
+  font-family:var(--mono); font-size:11.5px; color:var(--paper-dim);
+  display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;
+}
+footer .fnote{max-width:560px;}
+
+@media (max-width:640px){
+  .nav ul{gap:14px;}
+  .hero{padding:56px 20px 30px;}
+  section{padding:0 20px 54px;}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="brand">KIT_OSINT<span>://</span>USERNAME</div>
+  <ul>
+    <li><a href="#nota">Nota</a></li>
+    <li><a href="#herramientas">Herramientas</a></li>
+    <li><a href="#pivotes">Cadena de pivotes</a></li>
+    <li><a href="#flujo">Flujo CTF</a></li>
+    <li><a href="#ctf">Plataformas</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <span class="stamp">4 fuentes · compilado y deduplicado</span>
+  <h1>Rastreo de identidad<br>a partir de un <em>username</em></h1>
+  <p class="lead">Guía de referencia sobre herramientas de OSINT (Open Source Intelligence) para localizar la huella
+  digital de un alias en distintas plataformas — pensada para investigación de fuentes abiertas y retos CTF
+  (TryHackMe, HackTheBox, Trace Labs...).</p>
+  <div class="meta">
+    <span>22 <b>herramientas</b></span>
+    <span>8 <b>categorías</b></span>
+    <span>6 <b>plataformas CTF</b></span>
+  </div>
+</div>
+
+<div class="callout" id="nota">
+  <div class="box">
+    <span class="k">Antes de empezar</span>
+    <p>Que un mismo username aparezca en 15 sitios <b>no demuestra</b> que las 15 cuentas pertenezcan a la misma
+    persona. Estas herramientas generan <b>candidatos</b>; correlacionar avatar, biografía, ubicación, fechas de
+    actividad y enlaces externos es el trabajo real de la investigación. Úsalas sobre información pública, sin
+    intentar saltarte inicios de sesión ni acceder a contenido privado.</p>
+  </div>
+</div>
+
+<section id="herramientas">
+  <div class="section-head">
+    <span class="idx">01</span>
+    <h2>Herramientas</h2>
+    <span class="count" id="resultCount"></span>
+  </div>
+
+  <div class="search">
+    <input type="text" id="searchInput" placeholder="Buscar por nombre, categoría o palabra clave...">
+  </div>
+
+  <div class="filters" id="filterBar"></div>
+
+  <div class="grid" id="toolGrid"></div>
+</section>
+
+<section id="pivotes">
+  <div class="section-head">
+    <span class="idx">02</span>
+    <h2>Cadena de pivotes</h2>
+  </div>
+  <div class="pivot-wrap">
+    <svg id="pivotSvg" viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <p class="pivot-caption">El username es solo el punto de partida. Cada señal encontrada (avatar, bio, ubicación,
+  enlaces, dominio) es un hilo nuevo que puede confirmar — o descartar — que dos cuentas pertenecen a la misma
+  persona.</p>
+</section>
+
+<section id="flujo">
+  <div class="section-head">
+    <span class="idx">03</span>
+    <h2>Flujo recomendado para CTF</h2>
+  </div>
+  <div class="flow" id="flowList"></div>
+</section>
+
+<section id="ctf">
+  <div class="section-head">
+    <span class="idx">04</span>
+    <h2>Dónde practicar</h2>
+  </div>
+  <div class="ctf-grid" id="ctfGrid"></div>
+</section>
+
+<footer>
+  <span>kit-osint-username.html · uso educativo / investigación de fuentes abiertas</span>
+  <span class="fnote">Contenido consolidado a partir de 4 respuestas de IA sobre herramientas OSINT de rastreo de
+  usuarios, eliminando duplicados y organizando por categoría.</span>
+</footer>
+
+<script>
+const TOOLS = [
+  {name:"Sherlock", cat:"cli", coverage:"400–480+ sitios", desc:"El estándar de la industria en enumeración de usernames. CLI en Python, código abierto, muy maduro y estable. Permite búsquedas por lotes y uso de proxies. También existe empaquetado como actor web en Apify para lanzarlo sin instalar nada.", link:"https://github.com/sherlock-project/sherlock"},
+  {name:"Maigret", cat:"cli", coverage:"3.000+ sitios", desc:"Evolución de Sherlock: además de confirmar la existencia de una cuenta, extrae PII (bio, avatar, enlaces) y puede encadenar búsquedas recursivas a partir de lo que encuentra.", link:"https://github.com/soxoj/maigret"},
+  {name:"WhatsMyName", cat:"cli", coverage:"cientos de sitios (dataset comunitario)", desc:"Base de datos abierta y mantenida por la comunidad que documenta cómo detectar un username en cada plataforma. Otras herramientas (Blackbird, Sherlock) se apoyan en su dataset. Permite exportar resultados.", link:"https://whatsmyname.app"},
+  {name:"social-analyzer", cat:"cli", coverage:"~1.000 sitios", desc:"Detección multicapa: además de comprobar la existencia del perfil, aplica OCR y extracción de metadatos para reducir falsos positivos.", link:"https://github.com/qeeqbox/social-analyzer"},
+  {name:"Naminter", cat:"cli", coverage:"700+ sitios", desc:"Herramienta moderna que usa impersonación de navegador para esquivar bloqueos anti-bot (Cloudflare y similares), habituales en muchas plataformas.", link:""},
+  {name:"Blackbird", cat:"cli", coverage:"600+ sitios", desc:"Busca tanto por username como por email apoyándose en el dataset de WhatsMyName; rápida para comprobaciones combinadas.", link:"https://github.com/p1ngul1n0/blackbird"},
+  {name:"Namechk / KnowEm", cat:"web", coverage:"multiplataforma", desc:"Comprobación visual y rápida de disponibilidad de un alias en decenas de redes y servicios. Cómoda para checks puntuales, aunque menos exhaustiva que las CLI.", link:"https://namechk.com"},
+  {name:"Lullar", cat:"web", coverage:"170+ plataformas", desc:"Buscador online por username, email o nombre completo en redes sociales, mensajería y plataformas de gaming. No requiere registro.", link:""},
+  {name:"UserSearch / CheckUsernames", cat:"web", coverage:"decenas de sitios", desc:"Agregadores web con interfaz gráfica que comprueban la existencia de un perfil en múltiples plataformas de forma simultánea.", link:""},
+  {name:"Social Searcher / Social Mention", cat:"web", coverage:"redes sociales", desc:"Motores enfocados en monitorizar menciones de un nombre o usuario en tiempo real, sin necesidad de cuenta en las plataformas rastreadas.", link:""},
+  {name:"osint-sync", cat:"ext", coverage:"múltiples APIs", desc:"Extensión de navegador que integra varias APIs de OSINT (GHunt para Google, Holehe para emails...) para lanzar búsquedas seleccionando texto con el clic derecho.", link:""},
+  {name:"SpiderFoot", cat:"framework", coverage:"200+ módulos", desc:"Automatiza una investigación completa: parte de username, email, dominio, IP, teléfono, dirección Bitcoin, ASN... y correlaciona los resultados en un grafo de relaciones. Interfaz web o CLI.", link:"https://github.com/smicallef/spiderfoot"},
+  {name:"Recon-ng", cat:"framework", coverage:"modular", desc:"Framework de reconocimiento estilo Metasploit: módulos independientes que se combinan según la investigación.", link:"https://github.com/lanmaster53/recon-ng"},
+  {name:"theHarvester", cat:"framework", coverage:"correos / subdominios", desc:"Orientado a correos, subdominios y empleados de una organización; buen complemento cuando el rastro lleva a un dominio.", link:"https://github.com/laramies/theHarvester"},
+  {name:"Holehe", cat:"email", coverage:"decenas de servicios", desc:"Comprueba si un email está registrado en decenas de servicios online, sin necesitar la contraseña.", link:"https://github.com/megadose/holehe"},
+  {name:"Epieos", cat:"email", coverage:"cuentas vinculadas", desc:"Servicio web que vincula un email a cuentas de Google, redes sociales y otros servicios asociados.", link:""},
+  {name:"HaveIBeenPwned", cat:"email", coverage:"brechas de datos", desc:"No sigue un rastro de perfiles, pero se usa mucho para comprobar en qué filtraciones ha aparecido un correo o username.", link:"https://haveibeenpwned.com"},
+  {name:"Google Lens / Yandex Images / PimEyes", cat:"imagen", coverage:"búsqueda inversa", desc:"Búsqueda inversa de imágenes a partir de un avatar o foto de perfil. Una imagen reutilizada suele ser un pivote más fiable que el propio username.", link:""},
+  {name:"ExifTool", cat:"imagen", coverage:"metadatos EXIF", desc:"Extrae metadatos de fotos y documentos (localización, dispositivo, fecha) cuando el archivo original está disponible.", link:"https://exiftool.org"},
+  {name:"Nitter / Bibliogram / Picuki / Imginn", cat:"sinlogin", coverage:"frontends alternativos", desc:"Frontends que permiten ver perfiles y publicaciones de X/Twitter o Instagram sin necesidad de cuenta. Dependen de instancias públicas inestables.", link:""},
+  {name:"Wayback Machine", cat:"sinlogin", coverage:"archive.org", desc:"Permite consultar versiones pasadas de páginas y perfiles públicos que ya fueron eliminados o modificados.", link:"https://web.archive.org"},
+  {name:"Google Dorking", cat:"sinlogin", coverage:"operadores de búsqueda", desc:"Operadores como site: o comillas exactas permiten encontrar contenido público ya indexado (p. ej. site:github.com \"alias\") sin visitar la plataforma directamente.", link:""},
+  {name:"OSINT Framework", cat:"dir", coverage:"directorio de recursos", desc:"No es una herramienta en sí: es el mapa de referencia del ecosistema OSINT, organizado por categorías (usernames, personas, imágenes, dominios, emails...). El mejor punto de partida para descubrir qué existe.", link:"https://osintframework.com"},
+];
+
+const CATS = [
+  {id:"all", label:"Todas"},
+  {id:"cli", label:"Línea de comandos"},
+  {id:"web", label:"Web / rápido"},
+  {id:"framework", label:"Frameworks"},
+  {id:"email", label:"Email / brechas"},
+  {id:"imagen", label:"Imágenes / metadatos"},
+  {id:"sinlogin", label:"Ver sin login"},
+  {id:"ext", label:"Extensión"},
+  {id:"dir", label:"Directorio"},
+];
+
+const badgeLabel = {cli:"CLI", web:"Web", framework:"Framework", email:"Email", imagen:"Imagen", sinlogin:"Sin login", ext:"Extensión", dir:"Directorio"};
+
+let activeCat = "all";
+let query = "";
+
+function renderFilters(){
+  const bar = document.getElementById("filterBar");
+  bar.innerHTML = "";
+  CATS.forEach(c=>{
+    const b = document.createElement("button");
+    b.textContent = c.label;
+    if(c.id===activeCat) b.classList.add("active");
+    b.onclick = ()=>{ activeCat = c.id; renderFilters(); renderGrid(); };
+    bar.appendChild(b);
+  });
+}
+
+function renderGrid(){
+  const grid = document.getElementById("toolGrid");
+  const q = query.trim().toLowerCase();
+  const filtered = TOOLS.filter(t=>{
+    const matchesCat = activeCat==="all" || t.cat===activeCat;
+    const matchesQuery = !q || (t.name+t.desc+badgeLabel[t.cat]).toLowerCase().includes(q);
+    return matchesCat && matchesQuery;
+  });
+  document.getElementById("resultCount").textContent = filtered.length + " / " + TOOLS.length;
+  grid.innerHTML = "";
+  if(filtered.length===0){
+    grid.innerHTML = '<div class="no-results">Sin resultados para esa búsqueda.</div>';
+    return;
+  }
+  filtered.forEach(t=>{
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="top">
+        <h3>${t.name}</h3>
+        <span class="badge ${t.cat}">${badgeLabel[t.cat]}</span>
+      </div>
+      <div class="coverage">Cobertura: <b>${t.coverage}</b></div>
+      <p>${t.desc}</p>
+      ${t.link ? `<a class="link" href="${t.link}" target="_blank" rel="noopener">${t.link.replace('https://','')} ↗</a>` : ""}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+document.getElementById("searchInput").addEventListener("input", (e)=>{
+  query = e.target.value;
+  renderGrid();
+});
+
+renderFilters();
+renderGrid();
+
+// ---------- FLOW ----------
+const FLOW = [
+  {t:"Username → plataformas", s:"WhatsMyName, Sherlock o Maigret para localizar dónde existe cuenta."},
+  {t:"Username → dorks de Google/Bing", s:"site:reddit.com \"alias\", combinaciones con lugar o intereses."},
+  {t:"Avatar → búsqueda inversa", s:"Google Lens, Yandex Images o PimEyes para encontrar el mismo avatar en otro sitio."},
+  {t:"Perfil → pivotes", s:"Bio, ubicación y enlaces externos como nuevas señales de correlación."},
+  {t:"Username → repositorios", s:"GitHub / GitLab: README, commits y proyectos públicos."},
+  {t:"Email → servicios asociados", s:"Holehe, Epieos y HaveIBeenPwned si aparece una dirección de correo."},
+  {t:"Dominio → DNS / certificados", s:"Subdominios y certificados históricos si el rastro lleva a un dominio propio."},
+  {t:"Metadatos de documentos e imágenes", s:"ExifTool sobre cualquier archivo original disponible."},
+  {t:"Wayback Machine → contenido histórico", s:"Versiones pasadas de perfiles o páginas ya eliminadas."},
+  {t:"Correlación final", s:"Cruzar todas las señales independientes antes de dar por válida una hipótesis."},
+];
+const flowList = document.getElementById("flowList");
+FLOW.forEach(f=>{
+  const div = document.createElement("div");
+  div.className = "flow-step";
+  div.innerHTML = `<div class="num"></div><div class="txt">${f.t}<small>${f.s}</small></div>`;
+  flowList.appendChild(div);
+});
+
+// ---------- CTF PLATFORMS ----------
+const CTF = [
+  {name:"Trace Labs OSINT CTF", desc:"El referente de la disciplina: simula la búsqueda de personas desaparecidas con metodología real."},
+  {name:"TryHackMe", desc:"Salas específicas de OSINT (por ejemplo \"OSINT\" o \"Sherlocked\") con retos guiados."},
+  {name:"HackTheBox", desc:"Módulos de reconocimiento centrados en rastreo de usuarios y fuentes abiertas."},
+  {name:"Bellingcat Open Source Challenge", desc:"Retos basados en el trabajo real de la organización de periodismo de investigación."},
+  {name:"OSINT Industries CTF", desc:"Plataforma dedicada íntegramente a competiciones de OSINT."},
+  {name:"Diver OSINT CTF", desc:"Otra plataforma dedicada a este tipo de competición, con retos por categorías."},
+];
+const ctfGrid = document.getElementById("ctfGrid");
+CTF.forEach(c=>{
+  const div = document.createElement("div");
+  div.className = "ctf-card";
+  div.innerHTML = `<h3>${c.name}</h3><p>${c.desc}</p>`;
+  ctfGrid.appendChild(div);
+});
+
+// ---------- PIVOT SVG DIAGRAM ----------
+(function(){
+  const svg = document.getElementById("pivotSvg");
+  const ns = "http://www.w3.org/2000/svg";
+  const center = {x:130, y:190, label:"USERNAME"};
+  const nodes = [
+    {x:420, y:60,  label:"Avatar"},
+    {x:420, y:145, label:"Bio"},
+    {x:420, y:235, label:"Ubicación"},
+    {x:420, y:325, label:"Enlaces"},
+  ];
+  const result = {x:740, y:190, label:"CORRELACIÓN"};
+
+  function line(x1,y1,x2,y2,curve){
+    const midx = (x1+x2)/2;
+    const p = document.createElementNS(ns,"path");
+    const d = `M ${x1} ${y1} Q ${midx} ${(y1+y2)/2 + (curve||0)} ${x2} ${y2}`;
+    p.setAttribute("d", d);
+    p.setAttribute("stroke", "#c1443c");
+    p.setAttribute("stroke-width", "1.6");
+    p.setAttribute("fill", "none");
+    p.setAttribute("opacity", "0.55");
+    p.setAttribute("stroke-dasharray", "1 0");
+    svg.appendChild(p);
+  }
+
+  function pin(x,y,label,main){
+    const g = document.createElementNS(ns,"g");
+    const circle = document.createElementNS(ns,"circle");
+    circle.setAttribute("cx", x); circle.setAttribute("cy", y);
+    circle.setAttribute("r", main ? 8 : 6);
+    circle.setAttribute("fill", main ? "#e0a72e" : "#5fb8ac");
+    circle.setAttribute("stroke", "#101214");
+    circle.setAttribute("stroke-width", "2");
+    g.appendChild(circle);
+
+    const text = document.createElementNS(ns,"text");
+    text.setAttribute("x", x);
+    text.setAttribute("y", y - (main ? 18 : 14));
+    text.setAttribute("text-anchor", "middle");
+    text.setAttribute("font-family", "JetBrains Mono, monospace");
+    text.setAttribute("font-size", main ? "13" : "11.5");
+    text.setAttribute("font-weight", main ? "700" : "500");
+    text.setAttribute("fill", main ? "#e9e6dc" : "#c9cdd2");
+    text.textContent = label;
+    g.appendChild(text);
+    svg.appendChild(g);
+  }
+
+  nodes.forEach(n=>{
+    line(center.x, center.y, n.x, n.y);
+    line(n.x, n.y, result.x, result.y, (n.y - result.y) * 0.15);
+  });
+
+  pin(center.x, center.y, center.label, true);
+  nodes.forEach(n=> pin(n.x, n.y, n.label, false));
+  pin(result.x, result.y, result.label, true);
+})();
+</script>
+
+</body>
+</html>
