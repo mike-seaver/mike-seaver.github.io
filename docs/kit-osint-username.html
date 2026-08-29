@@ -169,6 +169,11 @@ section{max-width:1180px; margin:0 auto; padding:0 28px 70px;}
 .badge.sinlogin{background:rgba(140,200,255,0.14); color:#7fc0f0; border:1px solid rgba(140,200,255,0.35);}
 .badge.ext{background:rgba(180,220,140,0.14); color:#a3d67f; border:1px solid rgba(180,220,140,0.35);}
 .badge.dir{background:rgba(230,230,230,0.10); color:#c9c9c9; border:1px solid rgba(230,230,230,0.28);}
+.badge.dedicado{background:rgba(193,68,60,0.14); color:var(--thread); border:1px solid rgba(193,68,60,0.35);}
+.badge.salas{background:rgba(95,184,172,0.14); color:var(--teal); border:1px solid rgba(95,184,172,0.35);}
+.badge.geo{background:rgba(140,200,255,0.14); color:#7fc0f0; border:1px solid rgba(140,200,255,0.35);}
+.badge.agregador{background:rgba(224,167,46,0.14); color:var(--amber); border:1px solid rgba(224,167,46,0.35);}
+.badge.comunidad{background:rgba(180,220,140,0.14); color:#a3d67f; border:1px solid rgba(180,220,140,0.35);}
 .card .coverage{font-family:var(--mono); font-size:11.5px; color:var(--paper-dim);}
 .card .coverage b{color:var(--paper);}
 .card p{font-size:13.5px; color:var(--paper-dim); flex:1;}
@@ -211,17 +216,6 @@ section{max-width:1180px; margin:0 auto; padding:0 28px 70px;}
 .flow-step .txt{font-size:14px; color:var(--paper);}
 .flow-step .txt small{display:block; color:var(--paper-dim); font-size:12.5px; margin-top:2px;}
 
-/* ---------- CTF PLATFORMS ---------- */
-.ctf-grid{
-  display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:14px;
-}
-.ctf-card{
-  border:1px solid var(--line); border-radius:8px; padding:18px 20px;
-  background:linear-gradient(160deg, var(--card), var(--panel));
-}
-.ctf-card h3{font-family:var(--mono); font-size:14.5px; color:var(--paper); margin-bottom:8px;}
-.ctf-card p{font-size:13px; color:var(--paper-dim);}
-
 /* ---------- FOOTER ---------- */
 footer{
   border-top:1px solid var(--line); padding:34px 28px 50px;
@@ -252,15 +246,15 @@ footer .fnote{max-width:560px;}
 </nav>
 
 <div class="hero">
-  <span class="stamp">4 fuentes · compilado y deduplicado</span>
+  <span class="stamp">8 fuentes · compilado y deduplicado</span>
   <h1>Rastreo de identidad<br>a partir de un <em>username</em></h1>
   <p class="lead">Guía de referencia sobre herramientas de OSINT (Open Source Intelligence) para localizar la huella
   digital de un alias en distintas plataformas — pensada para investigación de fuentes abiertas y retos CTF
   (TryHackMe, HackTheBox, Trace Labs...).</p>
   <div class="meta">
     <span>22 <b>herramientas</b></span>
-    <span>8 <b>categorías</b></span>
-    <span>6 <b>plataformas CTF</b></span>
+    <span>36 <b>lugares para practicar</b></span>
+    <span>13 <b>categorías</b> en total</span>
   </div>
 </div>
 
@@ -315,14 +309,22 @@ footer .fnote{max-width:560px;}
   <div class="section-head">
     <span class="idx">04</span>
     <h2>Dónde practicar</h2>
+    <span class="count" id="ctfResultCount"></span>
   </div>
-  <div class="ctf-grid" id="ctfGrid"></div>
+
+  <div class="search">
+    <input type="text" id="ctfSearchInput" placeholder="Buscar por nombre, categoría o palabra clave...">
+  </div>
+
+  <div class="filters" id="ctfFilterBar"></div>
+
+  <div class="grid" id="ctfGrid"></div>
 </section>
 
 <footer>
   <span>kit-osint-username.html · uso educativo / investigación de fuentes abiertas</span>
-  <span class="fnote">Contenido consolidado a partir de 4 respuestas de IA sobre herramientas OSINT de rastreo de
-  usuarios, eliminando duplicados y organizando por categoría.</span>
+  <span class="fnote">Contenido consolidado a partir de 8 respuestas de IA sobre herramientas y retos de OSINT,
+  eliminando duplicados, verificando enlaces y organizando por categoría.</span>
 </footer>
 
 <script>
@@ -440,22 +442,118 @@ FLOW.forEach(f=>{
   flowList.appendChild(div);
 });
 
-// ---------- CTF PLATFORMS ----------
+// ---------- DÓNDE PRACTICAR ----------
 const CTF = [
-  {name:"Trace Labs OSINT CTF", desc:"El referente de la disciplina: simula la búsqueda de personas desaparecidas con metodología real."},
-  {name:"TryHackMe", desc:"Salas específicas de OSINT (por ejemplo \"OSINT\" o \"Sherlocked\") con retos guiados."},
-  {name:"HackTheBox", desc:"Módulos de reconocimiento centrados en rastreo de usuarios y fuentes abiertas."},
-  {name:"Bellingcat Open Source Challenge", desc:"Retos basados en el trabajo real de la organización de periodismo de investigación."},
-  {name:"OSINT Industries CTF", desc:"Plataforma dedicada íntegramente a competiciones de OSINT."},
-  {name:"Diver OSINT CTF", desc:"Otra plataforma dedicada a este tipo de competición, con retos por categorías."},
+  // -- CTF / retos dedicados a OSINT --
+  {name:"Trace Labs — Search Party CTF", cat:"dedicado", coverage:"eventos periódicos", desc:"El referente de la disciplina: simula la búsqueda de personas desaparecidas con metodología de investigación real, en equipo y por puntos.", link:"https://www.tracelabs.org/initiatives/search-party"},
+  {name:"OSINT Industries CTF", cat:"dedicado", coverage:"retos online", desc:"Plataforma dedicada íntegramente a competiciones de OSINT, con retos organizados por categoría.", link:"https://ctf.osint.industries/"},
+  {name:"Hacktoria", cat:"dedicado", coverage:"casos narrativos", desc:"Casos prácticos y escenarios de ciberinteligencia con estética interactiva, tipo investigación por capítulos.", link:"https://hacktoria.com/"},
+  {name:"Diver OSINT CTF", cat:"dedicado", coverage:"retos online", desc:"Plataforma dedicada a competición OSINT, con desafíos agrupados por dificultad.", link:"https://diverctf.org/en.html"},
+  {name:"Maltego Community CTF", cat:"dedicado", coverage:"retos online", desc:"CTF organizado por Maltego, orientado a practicar correlación de entidades con su propio software.", link:"https://www.maltego.com/community-ctf/"},
+  {name:"Gralhix — Sofia Santos OSINT Exercises", cat:"dedicado", coverage:"lista de ejercicios", desc:"Colección de ejercicios de OSINT por niveles, muy citada en la comunidad; incluye soluciones y writeups de otros participantes.", link:"https://gralhix.com/list-of-osint-exercises/"},
+  {name:"Bellingcat Open Source Challenge", cat:"dedicado", coverage:"retos periódicos", desc:"Retos basados en el trabajo real de la organización de periodismo de investigación, publicados junto a sus reportajes.", link:"https://challenge.bellingcat.com/"},
+  {name:"OSMOSIS CTF", cat:"dedicado", coverage:"retos online", desc:"CTF de OSINT en formato CTFd, con categorías clásicas de investigación de fuentes abiertas.", link:"https://osmosis.ctfd.io/"},
+  {name:"Kase Scenarios", cat:"dedicado", coverage:"casos simulados", desc:"Escenarios de investigación simulados pensados para practicar metodología OSINT paso a paso.", link:"https://kasescenarios.com/"},
+  {name:"OSINT for FUN", cat:"dedicado", coverage:"retos online", desc:"Colección de retos ligeros de OSINT pensados para practicar de forma informal.", link:"https://en.osint4fun.eu/challenges/"},
+  {name:"UK OSINT CTF", cat:"dedicado", coverage:"retos online", desc:"CTF centrado en OSINT con retos de dificultad progresiva.", link:"https://ctf.osint.uk/"},
+  {name:"OSINT Challenges", cat:"dedicado", coverage:"retos online", desc:"Repositorio de desafíos de OSINT organizados por categoría y dificultad.", link:"https://osintchallenges.com/"},
+  {name:"OSINTTOPIA", cat:"dedicado", coverage:"retos online", desc:"Plataforma de retos de OSINT con un enfoque didáctico para quienes empiezan.", link:"https://osintopia.fr/"},
+  {name:"Sourcing.Games", cat:"dedicado", coverage:"retos online", desc:"Juegos y retos centrados en verificación de fuentes y búsqueda de origen de contenido.", link:"https://sourcing.games/"},
+
+  // -- Salas y categorías dentro de plataformas más grandes --
+  {name:"TryHackMe — salas OSINT", cat:"salas", coverage:"OhSINT · Sakura Room · Web OSINT · Search Skills · Geolocating Images · Sherlock", desc:"Salas guiadas con teoría y preguntas paso a paso. La Sakura Room (de OSINT Dojo) y OhSINT son las más recomendadas para empezar.", link:"https://tryhackme.com/room/ohsint"},
+  {name:"Hack The Box — categoría OSINT", cat:"salas", coverage:"Monstrosity · Missing in Action · Searchlight · Easy Phish", desc:"Retos de reconocimiento centrados en rastreo de usuarios y fuentes abiertas, con formato de bandera (flag) como el resto de HTB.", link:"https://www.hackthebox.com/"},
+  {name:"CyberSoc Wales — Cyber Detective CTF", cat:"salas", coverage:"apartado dedicado", desc:"Sección de retos de investigación tipo detective dentro de la plataforma de CyberSoc Wales.", link:""},
+  {name:"The Hackers Labs", cat:"salas", coverage:"incluye categoría OSINT", desc:"Plataforma de retos en español con una categoría específica de OSINT entre sus máquinas y desafíos.", link:"https://thehackerslabs.com/"},
+  {name:"Blue Team Labs Online", cat:"salas", coverage:"investigaciones OSINT", desc:"Retos de investigación con enfoque defensivo (blue team) que incluyen componentes de OSINT.", link:"https://blueteamlabs.online/"},
+  {name:"picoCTF", cat:"salas", coverage:"CTF general, incluye OSINT", desc:"CTF educativo de Carnegie Mellon con retos de varias categorías, entre ellas reconocimiento y fuentes abiertas.", link:"https://picoctf.org/"},
+  {name:"Root Me", cat:"salas", coverage:"CTF general, incluye OSINT", desc:"Plataforma de retos técnicos con una categoría de recolección de información aplicable a OSINT.", link:"https://www.root-me.org/"},
+  {name:"CyberDefenders", cat:"salas", coverage:"retos de OSINT", desc:"Retos de investigación digital orientados a analistas SOC, con casos que incluyen fuentes abiertas.", link:"https://cyberdefenders.org/"},
+
+  // -- Geolocalización / IMINT --
+  {name:"GeoGuessr", cat:"geo", coverage:"juego de geolocalización", desc:"No es OSINT puro, pero entrena la habilidad de identificar ubicaciones a partir de imágenes de Street View — muy transferible a geolocalización real.", link:"https://www.geoguessr.com/"},
+  {name:"Geotastic", cat:"geo", coverage:"juego de geolocalización", desc:"Alternativa a GeoGuessr centrada también en identificar lugares a partir de imágenes públicas.", link:"https://geotastic.net/"},
+  {name:"GeoHints", cat:"geo", coverage:"guía de referencia", desc:"No es un juego, sino una guía de pistas visuales (señales, matrículas, vegetación...) para geolocalizar imágenes por país.", link:"https://geohints.com/"},
+  {name:"Zoom Earth", cat:"geo", coverage:"imágenes satelitales", desc:"Visor de imágenes satelitales en tiempo casi real, útil para practicar lectura de imágenes desde el aire.", link:"https://zoom.earth/"},
+  {name:"Quiztime", cat:"geo", coverage:"reto semanal en X/Twitter", desc:"Iniciativa comunitaria con un reto de geolocalización o verificación por semana (#Fridayquiz), con writeups posteriores de la solución.", link:"https://medium.com/quiztime"},
+
+  // -- Agregadores y directorios --
+  {name:"CTFtime.org", cat:"agregador", coverage:"agenda global de CTFs", desc:"Calendario de competiciones CTF de todo tipo; muchas incluyen categoría de OSINT y se pueden filtrar por ella.", link:"https://ctftime.org/"},
+  {name:"Forage — retos de Open Source Intelligence", cat:"agregador", coverage:"simulaciones de prácticas", desc:"Programas virtuales tipo simulación de prácticas profesionales, con algún módulo orientado a inteligencia de fuentes abiertas.", link:"https://www.theforage.com/"},
+
+  // -- Comunidades, guías y ejercicios --
+  {name:"OSINT Dojo", cat:"comunidad", coverage:"comunidad y salas TryHackMe", desc:"Colectivo detrás de varias de las salas de OSINT más recomendadas en TryHackMe (como Sakura Room), con guías y writeups propios.", link:""},
+  {name:"IntelTechniques (Michael Bazzell)", cat:"comunidad", coverage:"guías y ejercicios", desc:"Recursos, herramientas y ejercicios prácticos de uno de los referentes históricos del OSINT aplicado a investigación.", link:"https://inteltechniques.com/"},
+  {name:"Bellingcat — Online Investigation Toolkit", cat:"comunidad", coverage:"guías y kit de herramientas", desc:"Kit de herramientas y tutoriales (no un CTF) usado como base metodológica antes de lanzarse a los retos de Bellingcat.", link:"https://bellingcat.gitbook.io/toolkit"},
+  {name:"r/OSINT (Reddit)", cat:"comunidad", coverage:"comunidad", desc:"Foro donde se comparten casos, dudas metodológicas y enlaces a nuevos retos o herramientas.", link:"https://www.reddit.com/r/OSINT/"},
+  {name:"OSINT Curious", cat:"comunidad", coverage:"proyecto y podcast", desc:"Proyecto con podcast, blog y vídeos que incluye ejercicios prácticos y casos comentados paso a paso.", link:"https://osintcurio.us/"},
+  {name:"Sector035 — Week in OSINT", cat:"comunidad", coverage:"newsletter semanal", desc:"Newsletter semanal con novedades, herramientas y enlaces a nuevos retos recopilados de toda la comunidad.", link:""},
+  {name:"Hunt.io", cat:"comunidad", coverage:"recon de infraestructuras", desc:"Más orientado a reconocimiento de infraestructuras (dominios, certificados) que a retos gamificados, pero útil como complemento práctico.", link:"https://hunt.io/"},
 ];
-const ctfGrid = document.getElementById("ctfGrid");
-CTF.forEach(c=>{
-  const div = document.createElement("div");
-  div.className = "ctf-card";
-  div.innerHTML = `<h3>${c.name}</h3><p>${c.desc}</p>`;
-  ctfGrid.appendChild(div);
+
+const CTF_CATS = [
+  {id:"all", label:"Todas"},
+  {id:"dedicado", label:"CTF dedicado a OSINT"},
+  {id:"salas", label:"Salas en HTB / THM / otros"},
+  {id:"geo", label:"Geolocalización / IMINT"},
+  {id:"agregador", label:"Agregadores"},
+  {id:"comunidad", label:"Comunidades y guías"},
+];
+
+const ctfBadgeLabel = {dedicado:"CTF dedicado", salas:"Salas", geo:"Geo / IMINT", agregador:"Agregador", comunidad:"Comunidad"};
+
+let ctfActiveCat = "all";
+let ctfQuery = "";
+
+function renderCtfFilters(){
+  const bar = document.getElementById("ctfFilterBar");
+  bar.innerHTML = "";
+  CTF_CATS.forEach(c=>{
+    const b = document.createElement("button");
+    b.textContent = c.label;
+    if(c.id===ctfActiveCat) b.classList.add("active");
+    b.onclick = ()=>{ ctfActiveCat = c.id; renderCtfFilters(); renderCtfGrid(); };
+    bar.appendChild(b);
+  });
+}
+
+function renderCtfGrid(){
+  const grid = document.getElementById("ctfGrid");
+  const q = ctfQuery.trim().toLowerCase();
+  const filtered = CTF.filter(c=>{
+    const matchesCat = ctfActiveCat==="all" || c.cat===ctfActiveCat;
+    const matchesQuery = !q || (c.name+c.desc+ctfBadgeLabel[c.cat]).toLowerCase().includes(q);
+    return matchesCat && matchesQuery;
+  });
+  document.getElementById("ctfResultCount").textContent = filtered.length + " / " + CTF.length;
+  grid.innerHTML = "";
+  if(filtered.length===0){
+    grid.innerHTML = '<div class="no-results">Sin resultados para esa búsqueda.</div>';
+    return;
+  }
+  filtered.forEach(c=>{
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="top">
+        <h3>${c.name}</h3>
+        <span class="badge ${c.cat}">${ctfBadgeLabel[c.cat]}</span>
+      </div>
+      <div class="coverage">${c.coverage}</div>
+      <p>${c.desc}</p>
+      ${c.link ? `<a class="link" href="${c.link}" target="_blank" rel="noopener">${c.link.replace('https://','')} ↗</a>` : ""}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+document.getElementById("ctfSearchInput").addEventListener("input", (e)=>{
+  ctfQuery = e.target.value;
+  renderCtfGrid();
 });
+
+renderCtfFilters();
+renderCtfGrid();
 
 // ---------- PIVOT SVG DIAGRAM ----------
 (function(){
